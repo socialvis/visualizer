@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Visualization Magic</title>
+  <meta http-equiv="" content="" />
+  <style>
+    body {
+      overflow: hidden;
+      background-color: #fff;
+      margin: 0;
+    }
+    canvas {
+      width: 100%;
+      height: 100%
+    }
+    #menu.show{
+      opacity: 0.8;
+    }
+    #menu{
+      opacity: 0;
+      transition: opacity 0.3s ease-in;
+      position: fixed;
+      padding: 25px;
+      width: 200px;
+      bottom: 5%;
+      right: 5%;
+      background-color: navy;
+      text-align: center;
+    }
+    #user{
+      color: white;
+      font-size: 28px;
+      font-family: Arial;
+      display: block;
+      margin-bottom: 25px;
+    }
+    #user-image{
+      height: 75px;
+      width: 75px;
+      margin-bottom: 25px;
+    }
+    #expand-network{
+      color: white;
+      border: none;
+      font-size: 28px;
+      font-family: Arial;
+      display: block;
+      margin-bottom: 25px;
+      background-color: royalblue;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="menu">
+    <span id="user">
+      johannhof
+    </span>
+    <img id="user-image" src="" alt="" />
+    <button id="expand-network" type="button">
+      View Network
+    </button>
+  </div>
+  <div id="container"></div>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min.js"></script>
+  <script type="text/javascript" src="TrackballControls.js"></script>
+  <script src="helvetiker_regular.typeface.js"></script>
+  <script src="tween.min.js"></script>
+  <script src="./secret.js"></script>
+  <script src="./github.js"></script>
+  <script src="./app.js"></script>
+</body>
+
+</html>
