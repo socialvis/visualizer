@@ -139,7 +139,7 @@ button:active {
 	height: auto;
 	overflow: hidden;
 	z-index: -30;
-	opacity: 0.5;
+	opacity: 0.4;
 }
 
 video#background {
