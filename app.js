@@ -2,6 +2,7 @@ var THREE = window.THREE;
 var menu = document.getElementById("menu");
 var user = document.getElementById("user");
 var userImage = document.getElementById("user-image");
+var expandNetwork = document.getElementById("expand-network");
 
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
@@ -11,21 +12,15 @@ var renderer = new THREE.WebGLRenderer();
 var controls = new THREE.TrackballControls( camera );
 controls.zoomSpeed = 0.1;
 
+var currentUser = "";
+
 renderer.setClearColor(0x001155, 1);
 renderer.setSize(window.innerWidth, window.innerHeight);
 //renderer.shadowMapEnabled = true;
 //renderer.shadowMapSoft = true;
 document.getElementById("container").appendChild(renderer.domElement);
 
-var data = {};
-var dataLength = Object.keys(data).length;
-var currentUser = 'johannhof';
-
-window.github.getData('johannhof').then(function(result){
-  data = result;
-  dataLength = Object.keys(data).length;
-  createUserSpheres();
-});
+var allUsers = {};
 
 var spheres = [];
 
@@ -34,17 +29,17 @@ var textMaterial = new THREE.MeshBasicMaterial({
     color: 0xbbbbbb
 });
 var lineMaterial = new THREE.LineBasicMaterial({
-  color: 0x001199
+  color: 0x999999
 });
 
-function calcProximity(user){
+function calcProximity(user, dataLength){
   var i;
   if(!user.followers){
-    i = 30;
+    i = 20;
   }else if(~user.followers.indexOf(currentUser)){
     i = 5;
   }else{
-    i = 15;
+    i = 10;
   }
  return Math.max(
    Math.min(
@@ -63,7 +58,8 @@ function calcPopularity(user){
   }
 }
 
-function createSphere(user, coordinates) {
+function createSphere(user, center, data, coordinates) {
+  var dataLength = Object.keys(data).length;
   var material = new THREE.MeshLambertMaterial({
     transparent: true,
     opacity: 0.8,
@@ -80,9 +76,9 @@ function createSphere(user, coordinates) {
     y = coordinates[1];
     z = coordinates[2];
   }else{
-    x = calcProximity(user);
-    y = calcProximity(user);
-    z = calcProximity(user);
+    x = center[0] + calcProximity(user, dataLength);
+    y = center[1] + calcProximity(user, dataLength);
+    z = center[2] + calcProximity(user, dataLength);
   }
   var textGeom = new THREE.TextGeometry( user.name, {
       size: 0.3,
@@ -117,32 +113,56 @@ function makeLine(sphere1, sphere2) {
   scene.add(line);
 }
 
-function createUserSpheres(){
+function createUserSpheres(data, cSphere){
+  var center;
+  if(cSphere){
+    center= [cSphere.position.x, cSphere.position.y, cSphere.position.z];
+  }else{
+    center= [0,0,0];
+  }
+
   Object.keys(data).forEach(function(key){
-    if(!data[key].sphere){
+    if(!allUsers[key]){
+      allUsers[key] = data[key];
+    }
+    allUsers[key].followers = data[key].followers;
+  });
+
+  Object.keys(data).forEach(function(key){
+    if(!allUsers[key].sphere){
       if(key === currentUser){
-        createSphere(data[key], [0,0,0]);
+        createSphere(data[key], center, data, center);
       }else{
-        createSphere(data[key]);
+        createSphere(data[key], center, data);
       }
     }
   });
 
   Object.keys(data).forEach(function(key){
-    var user = data[key];
+    var user = allUsers[key];
     if(user.followers){
       user.followers.forEach(function(follower){
-        makeLine(user.sphere, data[follower].sphere);
+        makeLine(user.sphere, allUsers[follower].sphere);
       });
     }
   });
 }
 
-window.addEventListener( 'click', onMouseMove, false );
+function loadUserNetwork(user, extensive) {
+  currentUser = user.name;
+  window.github.getData(user.name, extensive).then(function(result){
+    if(user.sphere){
+      var scale = calcPopularity(result[user.name]);
+      user.sphere.scale.set(scale, scale, scale);
+    }
+
+    createUserSpheres(result, user.sphere);
+  });
+}
 
 var projector = new THREE.Projector();
 
-function onMouseMove( e ) {
+function onMouseMove() {
     var mouse3D = new THREE.Vector3( ( event.clientX / window.innerWidth ) * 2 - 1,   //x
                                     -( event.clientY / window.innerHeight ) * 2 + 1,  //y
                                     0.5 );                                            //z
@@ -206,9 +226,17 @@ function render(time) {
   renderer.render(scene, camera);
 }
 
+window.addEventListener( 'click', onMouseMove, false );
+
 render();
 
 function cameraLookDir(camera) {
   var point = new THREE.Vector3( 0, 0, -1 );
   return point.applyMatrix4( camera.matrixWorld );
 }
+
+loadUserNetwork({name : 'johannhof'}, true);
+
+expandNetwork.onclick = function () {
+  loadUserNetwork(allUsers[user.innerHTML], false);
+};
