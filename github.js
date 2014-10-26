@@ -10,7 +10,7 @@
      };
      request.open('get', 'https://api.github.com/users/' + user +
        '/followers?client_id=' + GITHUB_API_KEY + '&client_secret=' + GITHUB_SECRET,
-       true)
+       true);
      request.send();
    });
  }
@@ -40,7 +40,7 @@
 
 
  window.github = {};
- window.github.getData = function(user) {
+ window.github.getData = function(user, extensive) {
    return new Promise(function(resolve) {
          var request = new XMLHttpRequest();
          request.onload = function() {
@@ -59,7 +59,10 @@
        return parseUsers([user], nodes);
      })
      .then(function(data) {
-       return parseUsers(Object.keys(data), data);
+       if(extensive){
+         return parseUsers(Object.keys(data), data);
+       }
+       return data;
      })
      .then(function(nodes) {
        return Object.keys(nodes).reduce(function(result, key) {
